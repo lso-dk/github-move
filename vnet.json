@@ -1,0 +1,42 @@
+
+        
+{
+            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+              "location": {
+                "defaultValue": "[resourceGroup().location]",
+                "type": "String",
+                "metadata": {
+                  "description": "Location for all resources."
+                }
+              },
+            },"type": "Microsoft.Network/virtualNetworks",
+        "apiVersion": "2020-06-01",
+        "name": "Spoke-01",
+        "location": "[parameters('location')]",
+        "properties": {
+          "addressSpace": {
+            "addressPrefixes": [
+              "10.0.0.0/16"
+            ]
+          },
+          "enableDdosProtection": false,
+          "enableVmProtection": false
+        }
+      },
+      {
+        "type": "Microsoft.Network/virtualNetworks/subnets",
+        "apiVersion": "2020-06-01",
+        "name": "Spoke-01/Workload-SN",
+        "dependsOn": [
+          "[resourceId('Microsoft.Network/virtualNetworks', 'Spoke-01')]"
+        ],
+        "properties": {
+          "addressPrefix": "10.0.1.0/24",
+          "privateEndpointNetworkPolicies": "Enabled",
+          "privateLinkServiceNetworkPolicies": "Enabled"
+        }
+      
+      
+      
