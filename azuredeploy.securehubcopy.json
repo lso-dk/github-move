@@ -38,7 +38,7 @@
               "name": "hub-spoke",
               "properties": {
                 "remoteVirtualNetwork": {
-                  "id": "[resourceId('Microsoft.Network/virtualNetworks', 'rg-spoke-01','Spoke-1')]"
+                  "id": "/subscriptions/c6482e07-d710-4ba6-b9ee-ac4b235294b4/resourceGroups/rg-spoke-01/providers/Microsoft.Network/virtualNetworks/Spoke-1"
                 },
                 "allowHubToRemoteVnetTransit": true,
                 "allowRemoteVnetToUseHubVnetGateways": false,
