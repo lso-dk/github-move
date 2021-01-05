@@ -11,6 +11,7 @@
       },
       "firewallPolicyName": {
         "type": "string",
+        "defaultValue":"policy01",
         "metadata": {
           "description": "Azure Firewall policy name"
         }
