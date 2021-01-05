@@ -1,1 +1,1 @@
-New-AzResourceGroupDeployment -Name "Rules deploy" -ResourceGroupName rg-hub-test-1 -TemplateFile .\firewallrules.json
+New-AzResourceGroupDeployment -Name "Rules-deploy1" -ResourceGroupName rg-hub-test-1 -TemplateFile .\firewallrules.json
