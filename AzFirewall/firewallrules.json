@@ -15,9 +15,54 @@
       "metadata": {
         "description": "Azure Firewall policy name"
       }
+    },
+    "ipGroups_CIP_Azure_net_name": {
+      "defaultValue": "CIP-Azure-net",
+      "type": "String"
+    },
+    "ipGroups_CIP_AP29_IPGROUP_name": {
+      "defaultValue": "CIP-AP29-IPGROUP",
+      "type": "String"
+    },
+    "ipGroups_CIP_PensionDanmark_net_name": {
+      "defaultValue": "CIP-PensionDanmark-net",
+      "type": "String"
     }
   },
   "resources": [
+    {
+      "type": "Microsoft.Network/ipGroups",
+      "apiVersion": "2020-05-01",
+      "name": "[parameters('ipGroups_CIP_AP29_IPGROUP_name')]",
+      "location": "westeurope",
+      "properties": {
+        "ipAddresses": [
+          "10.107.0.0/16"
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/ipGroups",
+      "apiVersion": "2020-05-01",
+      "name": "[parameters('ipGroups_CIP_Azure_net_name')]",
+      "location": "westeurope",
+      "properties": {
+        "ipAddresses": [
+          "10.108.0.0/21"
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/ipGroups",
+      "apiVersion": "2020-05-01",
+      "name": "[parameters('ipGroups_CIP_PensionDanmark_net_name')]",
+      "location": "westeurope",
+      "properties": {
+        "ipAddresses": [
+          "10.20.0.0/16"
+        ]
+      }
+    },
     {
       "apiVersion": "2020-05-01",
       "type": "Microsoft.Network/firewallPolicies",
@@ -30,40 +75,17 @@
         {
           "apiVersion": "2020-05-01",
           "type": "ruleCollectionGroups",
-          "name": "si-tools-dev",
+          "name": "SiteVPN",
           "location": "[parameters('location')]",
           "dependsOn": [
-            "[resourceId('Microsoft.Network/firewallPolicies',parameters('firewallPolicyName'))]"
+            "[resourceId('Microsoft.Network/firewallPolicies',parameters('firewallPolicyName'))]",
+            "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_Azure_net_name'))]",
+            "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_PensionDanmark_net_name'))]",
+            "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_AP29_IPGROUP_name'))]"
           ],
           "properties": {
-            "priority": 10000,
+            "priority": 20000,
             "ruleCollections": [
-              {
-                "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
-                "name": "Example-Filter-Rule",
-                "action": {
-                  "type": "Deny"
-                },
-                "priority": 10001,
-                "rules": [
-                  {
-                    "ruleType": "NetworkRule",
-                    "name": "network-rule1",
-                    "ipProtocols": [
-                      "TCP"
-                    ],
-                    "destinationPorts": [
-                      "*"
-                    ],
-                    "sourceaddresses": [
-                      "*"
-                    ],
-                    "destinationaddresses": [
-                      "*"
-                    ]
-                  }
-                ]
-              },
               {
                 "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
                 "action": {
@@ -72,26 +94,65 @@
                 "rules": [
                   {
                     "ruleType": "NetworkRule",
-                    "name": "Access from azure servers to Microsoft KMS ( licensing servers )",
+                    "name": "AnytoPD",
                     "ipProtocols": [
-                      "TCP",
-                      "UDP"
+                      "Any"
                     ],
+                    "sourceAddresses": [],
+                    "sourceIpGroups": [
+                      "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_Azure_net_name'))]"
+                    ],
+                    "destinationAddresses": [],
+                    "destinationIpGroups": [
+                      "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_PensionDanmark_net_name'))]"
+                    ],
+                    "destinationFqdns": [],
                     "destinationPorts": [
-                      "443",
-                      "80",
-                      "123"
+                      "*"
+                    ]
+                  },
+                  {
+                    "ruleType": "NetworkRule",
+                    "name": "AnytoAzure",
+                    "ipProtocols": [
+                      "Any"
                     ],
-                    "sourceAddresses": [
-                      "10.46.0.0/16"
+                    "sourceAddresses": [],
+                    "sourceIpGroups": [
+                      "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_PensionDanmark_net_name'))]",
+                      "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_AP29_IPGROUP_name'))]"
                     ],
-                    "destinationAddresses": [
+                    "destinationAddresses": [],
+                    "destinationIpGroups": [
+                      "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_Azure_net_name'))]"
+                    ],
+                    "destinationFqdns": [],
+                    "destinationPorts": [
+                      "*"
+                    ]
+                  },
+                  {
+                    "ruleType": "NetworkRule",
+                    "name": "AnytoAP29",
+                    "ipProtocols": [
+                      "Any"
+                    ],
+                    "sourceAddresses": [],
+                    "sourceIpGroups": [
+                      "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_Azure_net_name'))]"
+                    ],
+                    "destinationAddresses": [],
+                    "destinationIpGroups": [
+                      "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_AP29_IPGROUP_name'))]"
+                    ],
+                    "destinationFqdns": [],
+                    "destinationPorts": [
                       "*"
                     ]
                   }
                 ],
-                "name": "network",
-                "priority": 10002
+                "name": "AnyruleVPN",
+                "priority": 20001
               }
             ]
           }
@@ -103,10 +164,10 @@
           "location": "[parameters('location')]",
           "dependsOn": [
             "[resourceId('Microsoft.Network/firewallPolicies',parameters('firewallPolicyName'))]",
-            "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', parameters('firewallPolicyName'),'si-tools-dev')]"
+            "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', parameters('firewallPolicyName'),'SiteVPN')]"
           ],
           "properties": {
-            "priority": 11000,
+            "priority": 21000,
             "ruleCollections": [
               {
                 "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
@@ -114,7 +175,7 @@
                 "action": {
                   "type": "Deny"
                 },
-                "priority": 11001,
+                "priority": 21001,
                 "rules": [
                   {
                     "ruleType": "NetworkRule",
@@ -161,7 +222,7 @@
                   }
                 ],
                 "name": "network",
-                "priority": 11002
+                "priority": 21002
               }
             ]
           }
@@ -169,15 +230,15 @@
         {
           "type": "ruleCollectionGroups",
           "apiVersion": "2020-05-01",
-          "name": "NATCollectionGroup",
+          "name": "Jumphost",
           "location": "westeurope",
           "dependsOn": [
             "[resourceId('Microsoft.Network/firewallPolicies',parameters('firewallPolicyName'))]",
-            "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', parameters('firewallPolicyName'),'si-tools-dev')]",
+            "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', parameters('firewallPolicyName'),'SiteVPN')]",
             "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', parameters('firewallPolicyName'),'navision')]"
           ],
           "properties": {
-            "priority": 9000,
+            "priority": 10000,
             "ruleCollections": [
               {
                 "ruleCollectionType": "FirewallPolicyNatRuleCollection",
@@ -206,8 +267,8 @@
                     ]
                   }
                 ],
-                "name": "dnat",
-                "priority": 9001
+                "name": "RDP",
+                "priority": 10001
               }
             ]
           }

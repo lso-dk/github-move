@@ -1,0 +1,219 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "location": {
+        "type": "string",
+        "defaultValue": "[resourceGroup().location]",
+        "metadata": {
+          "description": "Location for all resources, the location must support Availability Zones if required."
+        }
+      },
+      "firewallPolicyName": {
+        "type": "string",
+        "defaultValue": "policy01",
+        "metadata": {
+          "description": "Azure Firewall policy name"
+        }
+      }
+    },
+    "resources": [
+      {
+        "apiVersion": "2020-05-01",
+        "type": "Microsoft.Network/firewallPolicies",
+        "name": "[parameters('firewallPolicyName')]",
+        "location": "[parameters('location')]",
+        "properties": {
+          "threatIntelMode": "Alert"
+        },
+        "resources": [
+          {
+            "apiVersion": "2020-05-01",
+            "type": "ruleCollectionGroups",
+            "name": "si-tools-dev",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+              "[resourceId('Microsoft.Network/firewallPolicies',parameters('firewallPolicyName'))]"
+            ],
+            "properties": {
+              "priority": 20000,
+              "ruleCollections": [
+                {
+                  "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+                  "name": "Example-Filter-Rule",
+                  "action": {
+                    "type": "Deny"
+                  },
+                  "priority": 20001,
+                  "rules": [
+                    {
+                      "ruleType": "NetworkRule",
+                      "name": "network-rule1",
+                      "ipProtocols": [
+                        "TCP"
+                      ],
+                      "destinationPorts": [
+                        "*"
+                      ],
+                      "sourceaddresses": [
+                        "*"
+                      ],
+                      "destinationaddresses": [
+                        "*"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+                  "action": {
+                    "type": "Allow"
+                  },
+                  "rules": [
+                    {
+                      "ruleType": "NetworkRule",
+                      "name": "Access from azure servers to Microsoft KMS ( licensing servers )",
+                      "ipProtocols": [
+                        "TCP",
+                        "UDP"
+                      ],
+                      "destinationPorts": [
+                        "443",
+                        "80",
+                        "123"
+                      ],
+                      "sourceAddresses": [
+                        "10.46.0.0/16"
+                      ],
+                      "destinationAddresses": [
+                        "*"
+                      ]
+                    }
+                  ],
+                  "name": "network",
+                  "priority": 20002
+                }
+              ]
+            }
+          },
+          {
+            "apiVersion": "2020-05-01",
+            "type": "ruleCollectionGroups",
+            "name": "Navision",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+              "[resourceId('Microsoft.Network/firewallPolicies',parameters('firewallPolicyName'))]",
+              "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', parameters('firewallPolicyName'),'si-tools-dev')]"
+            ],
+            "properties": {
+              "priority": 21000,
+              "ruleCollections": [
+                {
+                  "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+                  "name": "Example-Filter-Rule",
+                  "action": {
+                    "type": "Deny"
+                  },
+                  "priority": 21001,
+                  "rules": [
+                    {
+                      "ruleType": "NetworkRule",
+                      "name": "network-rule1",
+                      "ipProtocols": [
+                        "TCP"
+                      ],
+                      "destinationPorts": [
+                        "*"
+                      ],
+                      "sourceaddresses": [
+                        "*"
+                      ],
+                      "destinationaddresses": [
+                        "*"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+                  "action": {
+                    "type": "Allow"
+                  },
+                  "rules": [
+                    {
+                      "ruleType": "NetworkRule",
+                      "name": "Access from azure servers to Microsoft KMS ( licensing servers )",
+                      "ipProtocols": [
+                        "TCP",
+                        "UDP"
+                      ],
+                      "destinationPorts": [
+                        "443",
+                        "80",
+                        "123"
+                      ],
+                      "sourceAddresses": [
+                        "10.46.0.0/16"
+                      ],
+                      "destinationAddresses": [
+                        "*"
+                      ]
+                    }
+                  ],
+                  "name": "network",
+                  "priority": 21002
+                }
+              ]
+            }
+          },
+          {
+            "type": "ruleCollectionGroups",
+            "apiVersion": "2020-05-01",
+            "name": "Jumphost",
+            "location": "westeurope",
+            "dependsOn": [
+              "[resourceId('Microsoft.Network/firewallPolicies',parameters('firewallPolicyName'))]",
+              "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', parameters('firewallPolicyName'),'si-tools-dev')]",
+              "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', parameters('firewallPolicyName'),'navision')]"
+            ],
+            "properties": {
+              "priority": 10000,
+              "ruleCollections": [
+                {
+                  "ruleCollectionType": "FirewallPolicyNatRuleCollection",
+                  "action": {
+                    "type": "Dnat"
+                  },
+                  "rules": [
+                    {
+                      "ruleType": "NatRule",
+                      "name": "rdp to azmigrate",
+                      "translatedAddress": "10.108.7.4",
+                      "translatedPort": "3389",
+                      "ipProtocols": [
+                        "TCP"
+                      ],
+                      "sourceAddresses": [
+                        "83.90.151.61",
+                        "2.130.226.11"
+                      ],
+                      "sourceIpGroups": [],
+                      "destinationAddresses": [
+                        "51.105.187.4"
+                      ],
+                      "destinationPorts": [
+                        "3389"
+                      ]
+                    }
+                  ],
+                  "name": "RDP",
+                  "priority": 10001
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+  
