@@ -1,0 +1,59 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "variables": {
+        "policySetName": "Baseline",
+        "policySetDisplayName": "Azure Platform Policy Initiative MVP",
+        "policySetDescription": "This policy initiative enforces the usage of mandatory tags for resource groups.",
+
+
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Authorization/policySetDefinitions",
+            "apiVersion": "2019-09-01",
+            "name": "[variables('policySetName')]",
+            "location": "westeurope",
+            "properties": {
+                "displayName": "[variables('policySetDisplayName')]",
+                "description": "[variables('policySetDescription')]",
+                "policyType": "Custom",
+                "metadata": {
+                    "category": "Baseline"
+                },
+                "policyDefinitions": [
+                    {
+                        "policyDefinitionReferenceId": "Deploy default Microsoft IaaSAntimalware extension for Windows Server_1",
+                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/2835b622-407b-4114-9198-6f7064cbe0dc",
+                        "parameters": {},
+                        "groupNames": [
+                            "Compute"
+                        ]
+                    },
+                    {
+                        "policyDefinitionReferenceId": "Microsoft IaaSAntimalware extension should be deployed on Windows servers_1",
+                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/9b597639-28e4-48eb-b506-56b05d366257",
+                        "parameters": {},
+                        "groupNames": [
+                            "Compute"
+                        ]
+                    },
+                    {
+                        "policyDefinitionReferenceId": "Microsoft Antimalware for Azure should be configured to automatically update protection signatures_1",
+                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/c43e4a30-77cb-48ab-a4dd-93f175c63b57",
+                        "parameters": {},
+                        "groupNames": [
+                            "Compute"
+                        ]
+                    }
+
+                ],
+                "policyDefinitionGroups": [
+                    {
+                        "name": "Compute"
+                    }
+                ]
+            }
+        }
+    ]
+}

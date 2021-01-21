@@ -1,0 +1,30 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "policyAssignmentName": {
+        "type": "string",
+        "defaultValue": "Assign policy",
+        "metadata": {
+          "description": "Specifies the name of the policy assignment, can be used defined or an idempotent name as the defaultValue provides."
+        }
+      },
+      "policyDefinitionID": {
+        "type": "string",
+        "defaultValue": "/subscriptions/c6482e07-d710-4ba6-b9ee-ac4b235294b4/providers/Microsoft.Authorization/policySetDefinitions/Baseline1",
+        "metadata": {
+          "description": "Specifies the ID of the policy definition or policy set definition being assigned."
+        }
+      }
+    },
+    "resources": [
+      {
+        "type": "Microsoft.Authorization/policyAssignments",
+        "name": "[parameters('policyAssignmentName')]",
+        "apiVersion": "2019-09-01",
+        "properties": {
+          "policyDefinitionId": "[parameters('policyDefinitionID')]"
+        }
+      }
+    ]
+  }

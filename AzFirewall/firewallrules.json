@@ -158,84 +158,13 @@
           }
         },
         {
-          "apiVersion": "2020-05-01",
-          "type": "ruleCollectionGroups",
-          "name": "Navision",
-          "location": "[parameters('location')]",
-          "dependsOn": [
-            "[resourceId('Microsoft.Network/firewallPolicies',parameters('firewallPolicyName'))]",
-            "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', parameters('firewallPolicyName'),'SiteVPN')]"
-          ],
-          "properties": {
-            "priority": 21000,
-            "ruleCollections": [
-              {
-                "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
-                "name": "Example-Filter-Rule",
-                "action": {
-                  "type": "Deny"
-                },
-                "priority": 21001,
-                "rules": [
-                  {
-                    "ruleType": "NetworkRule",
-                    "name": "network-rule1",
-                    "ipProtocols": [
-                      "TCP"
-                    ],
-                    "destinationPorts": [
-                      "*"
-                    ],
-                    "sourceaddresses": [
-                      "*"
-                    ],
-                    "destinationaddresses": [
-                      "*"
-                    ]
-                  }
-                ]
-              },
-              {
-                "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
-                "action": {
-                  "type": "Allow"
-                },
-                "rules": [
-                  {
-                    "ruleType": "NetworkRule",
-                    "name": "Access from azure servers to Microsoft KMS ( licensing servers )",
-                    "ipProtocols": [
-                      "TCP",
-                      "UDP"
-                    ],
-                    "destinationPorts": [
-                      "443",
-                      "80",
-                      "123"
-                    ],
-                    "sourceAddresses": [
-                      "10.46.0.0/16"
-                    ],
-                    "destinationAddresses": [
-                      "*"
-                    ]
-                  }
-                ],
-                "name": "network",
-                "priority": 21002
-              }
-            ]
-          }
-        },
-        {
           "type": "ruleCollectionGroups",
           "apiVersion": "2020-05-01",
           "name": "Jumphost",
           "location": "westeurope",
           "dependsOn": [
             "[resourceId('Microsoft.Network/firewallPolicies',parameters('firewallPolicyName'))]",
-            "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', parameters('firewallPolicyName'),'SiteVPN')]",
-            "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', parameters('firewallPolicyName'),'navision')]"
+            "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', parameters('firewallPolicyName'),'SiteVPN')]"
           ],
           "properties": {
             "priority": 10000,

@@ -1,0 +1,256 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for all resources, the location must support Availability Zones if required."
+            }
+        },
+        "firewallPolicyName": {
+            "type": "string",
+            "defaultValue": "Policy-01",
+            "metadata": {
+                "description": "Azure Firewall policy name"
+            }
+        },
+        "ipGroups_CIP_Azure_net_name": {
+            "defaultValue": "CIP-Azure-IPGROUP",
+            "type": "String"
+        },
+        "ipGroups_CIP_AP29_IPGROUP_name": {
+            "defaultValue": "CIP-AP29-IPGROUP",
+            "type": "String"
+        },
+        "ipGroups_CIP_PensionDanmark_net_name": {
+            "defaultValue": "CIP-PensionDanmark-IPGROUP",
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/ipGroups",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('ipGroups_CIP_AP29_IPGROUP_name')]",
+            "location": "westeurope",
+            "properties": {
+                "ipAddresses": [
+                    "10.107.0.0/16"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/ipGroups",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('ipGroups_CIP_Azure_net_name')]",
+            "location": "westeurope",
+            "properties": {
+                "ipAddresses": [
+                    "10.108.0.0/21"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/ipGroups",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('ipGroups_CIP_PensionDanmark_net_name')]",
+            "location": "westeurope",
+            "properties": {
+                "ipAddresses": [
+                    "10.20.0.0/16"
+                ]
+            }
+        },
+        {
+            "apiVersion": "2020-05-01",
+            "type": "Microsoft.Network/firewallPolicies",
+            "name": "[parameters('firewallPolicyName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "threatIntelMode": "Alert"
+            },
+            "resources": [
+                {
+                    "apiVersion": "2020-05-01",
+                    "type": "ruleCollectionGroups",
+                    "name": "SiteVPN",
+                    "location": "[parameters('location')]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Network/firewallPolicies',parameters('firewallPolicyName'))]",
+                        "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_Azure_net_name'))]",
+                        "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_PensionDanmark_net_name'))]",
+                        "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_AP29_IPGROUP_name'))]"
+                    ],
+                    "properties": {
+                        "priority": 20000,
+                        "ruleCollections": [
+                            {
+                                "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+                                "action": {
+                                    "type": "Allow"
+                                },
+                                "rules": [
+                                    {
+                                        "ruleType": "NetworkRule",
+                                        "name": "AnytoPD",
+                                        "ipProtocols": [
+                                            "Any"
+                                        ],
+                                        "sourceAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_Azure_net_name'))]"
+                                        ],
+                                        "destinationAddresses": [],
+                                        "destinationIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_PensionDanmark_net_name'))]"
+                                        ],
+                                        "destinationFqdns": [],
+                                        "destinationPorts": [
+                                            "*"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "NetworkRule",
+                                        "name": "AnytoAzure",
+                                        "ipProtocols": [
+                                            "Any"
+                                        ],
+                                        "sourceAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_PensionDanmark_net_name'))]",
+                                            "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_AP29_IPGROUP_name'))]"
+                                        ],
+                                        "destinationAddresses": [],
+                                        "destinationIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_Azure_net_name'))]"
+                                        ],
+                                        "destinationFqdns": [],
+                                        "destinationPorts": [
+                                            "*"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "NetworkRule",
+                                        "name": "AnytoAP29",
+                                        "ipProtocols": [
+                                            "Any"
+                                        ],
+                                        "sourceAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_Azure_net_name'))]"
+                                        ],
+                                        "destinationAddresses": [],
+                                        "destinationIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', parameters('ipGroups_CIP_AP29_IPGROUP_name'))]"
+                                        ],
+                                        "destinationFqdns": [],
+                                        "destinationPorts": [
+                                            "*"
+                                        ]
+                                    }
+                                ],
+                                "name": "AnyruleVPN",
+                                "priority": 20001
+                            }
+
+                        ]
+                    }
+                },
+                {
+                    "type": "ruleCollectionGroups",
+                    "apiVersion": "2020-05-01",
+                    "name": "Jumphost",
+                    "location": "westeurope",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Network/firewallPolicies',parameters('firewallPolicyName'))]",
+                        "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', parameters('firewallPolicyName'),'SiteVPN')]"
+                    ],
+                    "properties": {
+                        "priority": 10000,
+                        "ruleCollections": [
+                            {
+                                "ruleCollectionType": "FirewallPolicyNatRuleCollection",
+                                "action": {
+                                    "type": "Dnat"
+                                },
+                                "rules": [
+                                    {
+                                        "ruleType": "NatRule",
+                                        "name": "rdp to azmigrate",
+                                        "translatedAddress": "10.108.7.4",
+                                        "translatedPort": "3389",
+                                        "ipProtocols": [
+                                            "TCP"
+                                        ],
+                                        "sourceAddresses": [
+                                            "83.90.151.61",
+                                            "2.130.226.11"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "destinationAddresses": [
+                                            "51.105.187.4"
+                                        ],
+                                        "destinationPorts": [
+                                            "3389"
+                                        ]
+                                    }
+                                ],
+                                "name": "RDP",
+                                "priority": 10001
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "ruleCollectionGroups",
+                    "apiVersion": "2020-05-01",
+                    "name": "Web",
+                    "location": "westeurope",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Network/firewallPolicies',parameters('firewallPolicyName'))]",
+                        "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', parameters('firewallPolicyName'),'SiteVPN')]"
+                    ],
+                    "properties": {
+                        "priority": 21000,
+                        "ruleCollections": [
+                            {
+                                "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+                                "action": {
+                                    "type": "Allow"
+                                },
+                                "rules": [
+                                    {
+                                        "ruleType": "NetworkRule",
+                                        "name": "Allow Internet from azmigrate",
+                                        "translatedAddress": "10.108.7.4",
+
+                                        "ipProtocols": [
+                                            "TCP",
+                                            "UDP"
+                                        ],
+                                        "sourceAddresses": [
+                                            "10.108.7.4"
+
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "destinationAddresses": [
+                                            "*"
+                                        ],
+                                        "destinationPorts": [
+                                            "80",
+                                            "443"
+                                        ]
+                                    }
+                                ],
+                                "name": "Allow-Internet",
+                                "priority": 21001
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}
