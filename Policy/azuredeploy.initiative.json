@@ -5,8 +5,6 @@
         "policySetName": "Baseline",
         "policySetDisplayName": "Azure Platform Policy Initiative MVP",
         "policySetDescription": "This policy initiative enforces the usage of mandatory tags for resource groups.",
-
-
     },
     "resources": [
         {
@@ -45,8 +43,21 @@
                         "groupNames": [
                             "Compute"
                         ]
-                    }
+                    },
 
+                    {
+                        "policyDefinitionReferenceId": "Allowed locations_1",
+                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/e56962a6-4747-49cd-b67b-bf8b01975c4c",
+                        "parameters": {
+                            "listOfAllowedLocations": {
+                                "value": [
+                                    "westeurope",
+                                    "Westus"
+                                ]
+                            }
+                        },
+                        "groupNames": []
+                    }
                 ],
                 "policyDefinitionGroups": [
                     {

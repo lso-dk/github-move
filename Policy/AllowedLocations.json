@@ -1,0 +1,17 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "Parameters": {
+        "listOfAllowedLocations": {
+            "metadata": {
+                "comment": "Policy parameters should be provided as an object"
+            },
+            "value": {
+                "allowedLocations": [
+                    "West US",
+                    "East US"
+                ]
+            }
+        }
+    }
+}
