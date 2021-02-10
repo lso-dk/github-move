@@ -1,0 +1,138 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "builtInitiativeAssignmentBaseName": {
+            "type": "string",
+            "defaultValue": "89c6cddc-1c73-4ac1-b19c-54d1a15a42f2",
+            "metadata": {
+                "description": "Defines the basename of the initiative"
+            }
+        },
+        "builtInitiativeId": {
+            "type": "string",
+            "defaultValue": "/providers/Microsoft.Authorization/policySetDefinitions/89c6cddc-1c73-4ac1-b19c-54d1a15a42f2",
+            "metadata": {
+                "description": "Input the ID of the built in initiative, example: '/providers/Microsoft.Authorization/policySetDefinitions/89c6cddc-1c73-4ac1-b19c-54d1a15a42f2'"
+            }
+        },
+        "mgAssignments": {
+            "type": "object",
+            "metadata": {
+                "description": "Input array of objects to define which management groups to assign the initative to, with parameters"
+            }
+        },
+        "rbacRoleId": {
+            "type": "string",
+            "metadata": {
+                "description": "The id of the rbac role to be deployed, default value is contributor, leave blank for no rbac deployment"
+            }
+        }
+
+    },
+    "variables": {
+
+    },
+    "resources": [
+
+        {
+            "condition": "[greater(length(parameters('mgAssignments').managementGroupID),0)]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "name": "[concat('deployment-', parameters('builtInitiativeAssignmentBaseName'),parameters('mgAssignments').managementGroupID)]",
+            "scope": "[concat('Microsoft.Management/managementGroups/', parameters('mgAssignments').managementGroupID)]",
+            "location": "[deployment().location]",
+            "properties": {
+                "mode": "Incremental",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+
+                "parameters": {
+                    "builtInitiativeAssignmentBaseName": {
+                        "value": "[parameters('builtInitiativeAssignmentBaseName')]"
+                    },
+                    "builtInitiativeId": {
+                        "value": "[parameters('builtInitiativeId')]"
+                    },
+                    "mgAssignments": {
+                        "value": "[parameters('mgAssignments')]"
+
+                    },
+                    "rbacRoleId": {
+                        "value": "[parameters('rbacRoleId')]"
+                    }
+                },
+
+                "template": {
+
+                    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "builtInitiativeAssignmentBaseName": {
+                            "type": "string"
+                        },
+                        "builtInitiativeId": {
+                            "type": "string"
+                        },
+                        "mgAssignments": {
+                            "type": "object"
+                        },
+                        "rbacRoleId": {
+                            "type": "string"
+                        }
+
+                    },
+                    "resources": [
+                        {
+                            "type": "Microsoft.Authorization/policyAssignments",
+                            "name": "[uniqueString(concat('policya-', parameters('mgAssignments').managementGroupID,'-',parameters('builtInitiativeAssignmentBaseName')))]",
+                            "apiVersion": "2019-09-01",
+                            "properties": {
+                                "displayName": "[concat('policya-', parameters('mgAssignments').managementGroupID,'-', parameters('builtInitiativeAssignmentBaseName'))]",
+                                "policyDefinitionId": "[parameters('builtInitiativeId')]",
+                                "parameters": "[parameters('mgAssignments').parameters]",
+                                "enforcementMode": "[parameters('mgAssignments').enforcementMode]"
+                            },
+                            "location": "[deployment().location]",
+                            "identity": {
+                                "type": "SystemAssigned"
+                            }
+
+                        }
+                    ],
+                    "outputs": {
+                        "assignmentObject": {
+                            "type": "object",
+                            "value": {
+
+                                "rbacAssignmentGuid": "[guid(concat(uniqueString(concat('policya-', parameters('mgAssignments').managementGroupID,'-',parameters('builtInitiativeAssignmentBaseName')))),parameters('rbacRoleId'),parameters('mgAssignments').managementGroupID)]",
+                                "principalId": "[reference(extensionResourceId(tenantResourceId('Microsoft.Management/managementGroups', parameters('mgAssignments').managementGroupID), 'Microsoft.Authorization/policyAssignments', uniqueString(concat('policya-', parameters('mgAssignments').managementGroupID,'-',parameters('builtInitiativeAssignmentBaseName')))), '2018-05-01', 'Full' ).identity.principalId]",
+                                "managementGroupID": "[parameters('mgAssignments').managementGroupID]"//,
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+    ],
+    "outputs": {
+        "rbacAssignmentGuid": {
+            "type": "string",
+            "value": 
+                "[reference(concat('deployment-', parameters('builtInitiativeAssignmentBaseName'),parameters('mgAssignments').managementGroupID)).outputs.assignmentObject.value.rbacAssignmentGuid]"
+        },
+        "principalId": {
+            "type": "string",
+            "value": 
+                "[reference(concat('deployment-', parameters('builtInitiativeAssignmentBaseName'),parameters('mgAssignments').managementGroupID)).outputs.assignmentObject.value.principalId]"
+        },
+        "managementGroupID": {
+            "type": "string",
+            "value": 
+                "[reference(concat('deployment-', parameters('builtInitiativeAssignmentBaseName'),parameters('mgAssignments').managementGroupID)).outputs.assignmentObject.value.managementGroupID]"
+        }
+
+    }
+}

@@ -1,0 +1,29 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "builtInitiativeAssignmentBaseName": {
+            "value": "Location"
+        },
+        "builtInitiativeId": {
+            "value": "/providers/Microsoft.Management/managementGroups/ARMMSP/providers/Microsoft.Authorization/policySetDefinitions/Allowed Locations"
+        },
+        "mgAssignments": {
+            "value": {
+                "managementGroupID": "ARMMSP",
+                "parameters": {
+                    "LISTOFALLOWEDLOCATIONS": {
+                        "value": [
+                            "northeurope"
+                        ]
+                    }
+                },
+                "enforcementMode": "Default"
+            }
+            
+        },
+        "rbacRoleId": {
+            "value": ""
+        }
+    }
+}
