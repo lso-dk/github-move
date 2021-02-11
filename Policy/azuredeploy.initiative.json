@@ -1,9 +1,10 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
+    
     "variables": {
-        "policySetName": "Baseline",
-        "policySetDisplayName": "Azure Platform Policy Initiative MVP",
+        "policySetName": "location12",
+        "policySetDisplayName": "location12",
         "policySetDescription": "This policy initiative enforces the usage of mandatory tags for resource groups.",
     },
     "resources": [
@@ -18,6 +19,19 @@
                 "policyType": "Custom",
                 "metadata": {
                     "category": "Baseline"
+                },
+                "parameters": {
+                    "allowlocation": {
+                        "type": "Array",
+                        "metadata": {
+                            "displayName": "allowlocation"
+                        },
+                        "allowedValues": [
+                            "westeurope",
+                            "Asia",
+                            "westus"
+                        ]
+                    }
                 },
                 "policyDefinitions": [
                     {
@@ -50,10 +64,7 @@
                         "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/e56962a6-4747-49cd-b67b-bf8b01975c4c",
                         "parameters": {
                             "listOfAllowedLocations": {
-                                "value": [
-                                    "westeurope",
-                                    "Westus"
-                                ]
+                                "value": "[[parameters('allowlocation')]"
                             }
                         },
                         "groupNames": []
