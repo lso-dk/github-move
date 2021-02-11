@@ -1,16 +1,23 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
-    "Parameters": {
-        "listOfAllowedLocations": {
+    "parameters": {
+        "initiativeDefinitionName": {
+            "value": "location12"
+        },
+        "initiativeAssignmentName": {
+            "value": "Enforce using mandatory tags for all resources"
+        },
+        "Parameters": {
             "metadata": {
-                "comment": "Policy parameters should be provided as an object"
+                "comment": "Policy parameters should be provided as an object: https://docs.microsoft.com/en-us/azure/azure-resource-manager/deploy-to-subscription#assign-policy"
             },
-            "value": {
-                "allowedLocations": [
-                    "West US",
-                    "East US"
-                ]
+            "value": { 
+                "allowlocation": {
+                    "value": [ 
+                        "westus"
+                    ]
+                }
             }
         }
     }

@@ -3,9 +3,7 @@ Select-AzSubscription -Subscription $subscriptionId
 
 New-AzDeployment  `
     -TemplateFile .\azuredeploy.initiative.json -Location "westeurope" `
-    -TemplateParameterFile .\AllowedLocations.json
-
-
+ 
 New-AzDeployment  `
     -Location "West Europe" `
     -TemplateFile .\azuredeploy.policyassigment.json `
@@ -13,5 +11,6 @@ New-AzDeployment  `
 
     
 $Subscription = Get-AzSubscription -SubscriptionName 'MSDN Platforms'
-$PolicySet = Get-AzPolicySetDefinition -Custom | Where-Object { $_.Properties.DisplayName -eq 'Azure Platform Policy Initiative MVP' }
+$PolicySet = Get-AzPolicySetDefinition -Custom | Where-Object { $_.Properties.DisplayName -eq 'location12' }
 New-AzPolicyAssignment -Name 'MyInitiative' -PolicySetDefinition $PolicySet -Scope "/subscriptions/$($Subscription.Id)" -AssignIdentity -Location 'westeurope' -PolicyParameter .\AllowedLocations.json
+
