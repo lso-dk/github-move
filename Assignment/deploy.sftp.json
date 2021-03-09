@@ -80,7 +80,9 @@
                 "name": "[parameters('storageAccountType')]"
             },
             "kind": "Storage",
-            "properties": {}
+            "properties": {
+                "supportsHttpsTrafficOnly": true
+            }
         },
         {
             "type": "Microsoft.ContainerInstance/containerGroups",
