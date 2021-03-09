@@ -1,3 +1,6 @@
-New-AzResourceGroupDeployment -ResourceGroupName publiccloud -TemplateUri https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/101-webapp-linux-node/azuredeploy.json
 
-New-AzResourceGroupDeployment -ResourceGroupName publiccloud -TemplateFile .\deploy.nodejs.json
+# deploy web app with private endpoints(hostname webapp.cloudtest.dk), app service plan, AppGW with WAF #
+New-AzResourceGroupDeployment -ResourceGroupName MyResGroup -TemplateFile .\deploy.nodejs.json
+
+# Deploy Azure Cosmos DB Account #
+New-AzResourceGroupDeployment -name mongodb -ResourceGroupName myresgroup -TemplateFile .\deploy.mongodb.json -TemplateParameterFile .\deploy.mongodb.parameters.json
