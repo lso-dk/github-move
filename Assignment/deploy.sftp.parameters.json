@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageAccountType": {
+      "value": "Standard_LRS"
+    },
+    "fileShareName": {
+      "value": "sftpfileshare"
+    },
+    "sftpUser": {
+      "value": "lsoadmin"
+    },
+    "sftpPassword": {
+      "value": "EasyToRemember1!"
+    },
+    "location": {
+      "value": "[resourceGroup().location]"
+    },
+    "containerGroupDNSLabel": {
+      "value": "[uniqueString(resourceGroup().id, deployment().name)]"
+    }
+  }
+}
